@@ -1,4 +1,4 @@
-from pforms import db
+from .extensions import db
 from dataclasses import dataclass
 
 @dataclass

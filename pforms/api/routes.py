@@ -1,5 +1,6 @@
 from flask import Blueprint, redirect, url_for, request, jsonify
-from pforms import db
+
+from pforms.extensions import db
 from pforms.models import User
 
 api = Blueprint('api', __name__, url_prefix='/api')

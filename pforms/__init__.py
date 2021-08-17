@@ -1,19 +1,17 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+from .extensions import db
+from .site.routes import site
+from .api.routes import api
 
-def create_app():
+def create_app(config_file='settings.py'):
     app = Flask(__name__)
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://pforms_role:12345@localhost/pforms'
+    app.config.from_pyfile(config_file)
 
     db.init_app(app)
 
-    from pforms.site.routes import site
     app.register_blueprint(site)
-
-    from pforms.api.routes import api
     app.register_blueprint(api)
 
     return app
