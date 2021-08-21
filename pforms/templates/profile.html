@@ -1,11 +1,12 @@
 <html>
     <body>
         {% if user %}
-        Welcome to the app {{user}}
+        Welcome to the app {{user}} <br/>
+        <a href="/users/{{user}}/delete"> delete profile </a>
         {% else %}
         Welcome to the app anonymous
         {% endif %}
         <br/>
-        <a href="/"> home </a>
+        <a href="/logout"> logout </a>
     </body>
 </html>
