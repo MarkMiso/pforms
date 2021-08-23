@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block pagebody %}
+<form action="/forms/creation" method="POST">
+    <p> Form Title <input name="title" type="text" /> </p>
+    <p> Description <input name="description" type="text" /> </p>
+    <p> <input type="submit"> </p>
+</form>
+{% endblock %}
