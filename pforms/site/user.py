@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 
-from pforms.extensions import db, login_manager, login_required, login_user, logout_user
+from pforms.extensions import db, login_manager, login_required, login_user, logout_user, current_user
 from pforms.models import User
 
 user = Blueprint('user', __name__)
@@ -10,16 +10,14 @@ user = Blueprint('user', __name__)
 def load_user(user_id):
     return User.query.filter_by(id=user_id).first()
 
-# Index
-@user.route('/')
-def index():
-    return render_template("index.html")
-
 # User stuff
-@user.route('/users/<username>')
-@login_required
-def show_user(username):
-    return render_template('profile.html', user=username)
+@user.route('/users/home')
+def show_user():
+    if current_user.is_authenticated:
+        username = current_user.username
+        return render_template('profile.html', user=username)
+    else:
+        return redirect(url_for('navigation.index'))
 
 @user.route('/signup', methods=['GET', 'POST'])
 def add_user():
@@ -40,18 +38,18 @@ def add_user():
                 db.session.commit()
 
                 login_user(user)
-                return redirect(url_for('user.show_user', username=username))
+                return redirect(url_for('user.show_user'))
         else:
             flash('passowrds do not match')
         
         return redirect(url_for('user.add_user'))
 
-@user.route('/users/<username>/delete')
+@user.route('/users/users/delete')
 @login_required
-def delete_user(username):
-    user = User.query.filter_by(username=username).first()
-    db.session.delete(user)
+def delete_user():
+    db.session.delete(current_user)
     db.session.commit()
+    logout_user()
     
     flash('Success! Your user has been deleted.')
     return render_template('success.html')
@@ -69,7 +67,7 @@ def signin():
 
         if user and user.verify_password(password):
             login_user(user)
-            return redirect(url_for('user.show_user', username=username))
+            return redirect(url_for('user.show_user'))
         else:
             flash('wrong username or password')
             return redirect(url_for('user.signin'))
@@ -78,6 +76,4 @@ def signin():
 @login_required
 def signout():
     logout_user()
-    return redirect(url_for('user.index'))
-
-# Forms stuff
+    return redirect(url_for('navigation.index'))

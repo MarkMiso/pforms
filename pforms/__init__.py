@@ -3,6 +3,7 @@ from flask import Flask
 from .extensions import db, login_manager
 from .site.user import user
 from .site.form import form
+from .site.navigation import navigation
 
 def create_app(config_file='settings.py'):
     app = Flask(__name__)
@@ -14,5 +15,6 @@ def create_app(config_file='settings.py'):
 
     app.register_blueprint(user)
     app.register_blueprint(form)
+    app.register_blueprint(navigation)
 
     return app
