@@ -20,6 +20,9 @@ class User(db.Model, UserMixin):
 
     def verify_password(self, password):
         return check_password_hash(self.password, password)
+
+    def get_user_forms(self):
+        return Form.query.filter_by(creator=self.id).all()
      
 class Form(db.Model):
    __tablename__ = 'forms'
@@ -39,7 +42,7 @@ class Question(db.Model):
    form_id = db.Column(db.Integer, db.ForeignKey('forms.id'), nullable=False)     
    multiple = db.Column(db.Boolean)
 
-class answer(db.Model):
+class Answer(db.Model):
    __tablename__ = 'answers'
    
    id = db.Column(db.Integer, primary_key=True)

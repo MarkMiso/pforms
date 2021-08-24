@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 {% block pagebody %}
 
-Welcome to the app {{user}}
+Welcome to the app {{user}} </br>
+
+{% with forms = current_user.get_user_forms() %}
+            {% if forms %}
+            </br>Your forms: </br>
+                {% for form in forms %}
+                    {{form.name}} <a href="{{ url_for('form.delete_form', form_id=form.id) }}"> Delete form </a></br>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
 {% endblock %}
