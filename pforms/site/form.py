@@ -28,16 +28,16 @@ def add_form():
 
         return redirect(url_for('form.add_questions', form=form.id, questions=questions))
 
-@form.route('/forms/creation/<form_id>/<questions>', methods=['GET', 'POST'])
+@form.route('/forms/creation/<form>/<questions>', methods=['GET', 'POST'])
 @login_required
-def add_questions(form_id, questions):
+def add_questions(form, questions):
     question_number = int(questions)
-    form_id = int(form_id)
+    form_id = int(form)
 
     # TODO: secuirty
 
     if request.method == 'GET':
-        return render_template('formCreation.html', form=form, questions=question_number)
+        return render_template('formCreation.html', form=form_id, questions=question_number)
     else:
         question_text = request.form.get('question0')
         question_category = "test"
@@ -66,7 +66,7 @@ def add_questions(form_id, questions):
 
         db.session.commit()
         flash("Success! Your form has been added.")
-        return render_template('succes.html')
+        return render_template('success.html')
 
 @form.route('/forms/<form_id>/delete')
 @login_required
@@ -90,4 +90,4 @@ def delete_form(form_id):
     db.session.commit()
 
     flash("Success! Your form has been deleted")
-    return render_template('succes.html')
+    return render_template('success.html')

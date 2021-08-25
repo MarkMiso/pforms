@@ -4,7 +4,7 @@
 
 <div class="mt-5">
     {% if questions %}
-    <form method="POST" action="/forms/creation/{{form}}/{{questions}}" style="max-width: 480px; margin: auto;">
+    <form method="POST" action="/forms/creation/{{ form }}/{{ questions }}" style="max-width: 480px; margin: auto;">
         {% for i in range(0, questions) %}
         <h1 class="h3 font-weight-normal mt-3">
             Question number {{ i }}
