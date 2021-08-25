@@ -34,7 +34,11 @@ def add_questions(form, questions):
     question_number = int(questions)
     form_id = int(form)
 
-    # TODO: secuirty
+    if current_user.id != Form.query.filter_by(id=form_id).first().creator:
+        return "Forbidden: you must be the owner of the form to add questions", 403
+
+    if Question.query.filter_by(form_id=form_id).first() is not None:
+        return "Method Not Allowed: you have already created questions for this form", 405
 
     if request.method == 'GET':
         return render_template('formCreation.html', form=form_id, questions=question_number)
@@ -73,7 +77,8 @@ def add_questions(form, questions):
 def delete_form(form_id):
     form_id = int(form_id)
 
-    # TODO: secuirty
+    if current_user.id != Form.query.filter_by(id=form_id).first().creator:
+        return "Forbidden: you must be the owner of the form to delete it", 403
     
     form = Form.query.filter_by(id=form_id).first()
     questions = Question.query.filter_by(form_id=form_id).all()
