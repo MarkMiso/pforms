@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block pagebody %}
+
+<div class="mt-5">
+    {% if questions %}
+        <form  method="POST" action="/forms/create/{{ form }}/{{ questions }}/{{ answers }}" style="max-width: 480px; margin: auto;">
+            {% for i in range(0, questions) %}
+                <h1 class="h3 font-weight-normal mt-3">
+                    Question number {{ i }}
+                </h1>
+                <input type="text" name="question{{ i }}" class="form-control mt-3" placeholder="question" required>
+                {%for j in range(0, answers) %}
+                    <input type="text" name="answer{{ j }}-question{{ i }}" class="form-control mt-3" placeholder="answer {{ j }}" required>
+                {% endfor %}
+                <div class="form-check mt-3">
+                    <input type="checkbox" name="multiple{{ i }}" class="form-check-input">
+                    <label class="form-check-label" for="multiple{{ i }}">Allow multiple answers</label>
+                </div>
+                <div class="form-check mt-3">
+                    <input type="checkbox" name="dependency{{ i }}" class="form-check-input">
+                    <label class="form-check-label" for="dependency{{ i }}">Show question only if a specific answer is given</label>
+                </div>
+                <div class="input-group mt-3">
+                    <input type="number" name="question_dependency{{ i }}" class="form-control" placeholder="Question number">
+                    <input type="number" name="answer_dependency{{ i }}" class="form-control" placeholder="Answer number">
+                </div>
+            {% endfor %}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class=" mt-3 alert alert-danger" role="alert">
+                            {{message}}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div class="mt-3 mb-3">
+                <button type="submit" class="btn btn-outline-primary">Submit</button>
+            </div>
+        </form>
+    {% else %}
+        <form method="POST" action="/forms/create" style="max-width: 480px; margin: auto;">
+            <h1 class="h3 font-weight-normal mt-3">
+                Please enter the required fields
+            </h1>
+            <input type="text" name="title" class="form-control mt-3" id="title" placeholder="Form Title" required>
+            <input type="text" name="description" class="form-control mt-3" id="description" placeholder="Form Description" required>
+            <input type="number" name="questions" class="form-control mt-3" id="questions" placeholder="Number of Questions" required>
+            <input type="number" name="answers" class="form-control mt-3" id="answers" placeholder="Number of Answers for each Question" required>
+            <div class="mt-3 mb-3">
+                <button type="submit" class="btn btn-outline-primary">Submit</button>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

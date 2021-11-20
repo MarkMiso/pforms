@@ -1,15 +1,21 @@
 {% extends "base.html" %}
 {% block pagebody %}
 
-Welcome to the app {{user}} </br>
-
-{% with forms = current_user.get_user_forms() %}
-            {% if forms %}
-            </br>Your forms: </br>
-                {% for form in forms %}
-                    {{form.name}} <a href="{{ url_for('form.delete_form', form_id=form.id) }}"> Delete form </a></br>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+<div class="mt-5" style="max-width: 480px; margin: auto;">
+    <h1 class="h3 font-weight-normal mt-3">
+        Welcome to the app {{user}}
+    </h1>
+    <div class="mt-3 mb-3">
+        <a class="btn btn-outline-primary" role="button" href="{{ url_for('form.add_form') }}">Create Form</a>
+    </div>
+    {% with forms = current_user.forms %}
+        {% if forms %}
+        </br>Your forms: </br>
+            {% for form in forms %}
+                {{form.name}} <a href="{{ url_for('form.delete_form', form_id=form.id) }}"> Delete form </a></br>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
 
 {% endblock %}

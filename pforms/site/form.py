@@ -1,74 +1,125 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 
 from pforms.extensions import db, login_required, current_user
-from pforms.models import User, Form, Question, Answer
+from pforms.models import User, Form, Question, Answer, Submission
 
 form = Blueprint('form', __name__)
 
 @form.route('/forms/home')
 def show_forms():
-    if current_user.is_authenticated:
-        return render_template('formCreation.html')
-    else:
-        return render_template('formCreation.html')
+    forms = Form.query.all()
+    return render_template('form_home.html', forms=forms)
 
-@form.route('/forms/creation', methods=['GET', 'POST'])
+@form.route('/forms/<form_id>', methods=['GET', 'POST'])
+@login_required
+def submit_form(form_id):
+    form_id = int(form_id)
+
+    if Submission.query.filter_by(user_id=current_user.id).filter_by(form_id=form_id).first() is not None:
+        flash("Error: form already answered")
+        return redirect(url_for('form.show_forms'))
+
+    if request.method == 'GET':
+        return render_template('form.html', form_id=form_id, form=Form.query.filter_by(id=form_id).first())
+    else:
+        form = Form.query.filter_by(id=form_id).first()
+        request_form = request.form
+
+
+        answers = []
+        for question in form.questions:
+            answer_id = request_form.get(str(question.id))
+            if answer_id is not None: answer_id = int(answer_id)
+
+            for answer in question.answers:
+                if answer_id == answer.id:
+                    if question.dependency_id is None or question.dependency_id in answers:
+                        answers.append(answer_id)
+                        answer.times_selected += 1
+
+        submit = Submission(form_id=form.id, user_id=current_user.id)
+        db.session.add(submit)
+        db.session.commit()
+        flash('Success! Your answers have been registered')
+        return render_template('success.html')
+
+@form.route('/forms/create', methods=['GET', 'POST'])
 @login_required
 def add_form():
     if request.method == 'GET':
-        return render_template('formCreation.html')
+        return render_template('form_create.html')
     else:
+        # TODO: prevent creation of empty form
         title = request.form.get('title')
         description = request.form.get('description')
         questions = request.form.get('questions')
+        answers = request.form.get('answers')
 
-        form = Form(name=title, description=description, creator=current_user.id)
+        form = Form(name=title, description=description, creator_id=current_user.id)
         db.session.add(form)
         db.session.commit()
 
-        return redirect(url_for('form.add_questions', form=form.id, questions=questions))
+        return redirect(url_for('form.add_questions', form=form.id, questions=questions, answers=answers))
 
-@form.route('/forms/creation/<form>/<questions>', methods=['GET', 'POST'])
+@form.route('/forms/create/<form>/<questions>/<answers>', methods=['GET', 'POST'])
 @login_required
-def add_questions(form, questions):
-    question_number = int(questions)
+def add_questions(form, questions, answers):
+    number_of_questions = int(questions)
+    number_of_answers = int(answers)
     form_id = int(form)
 
-    if current_user.id != Form.query.filter_by(id=form_id).first().creator:
+    if current_user.id != Form.query.filter_by(id=form_id).first().creator_id:
         return "Forbidden: you must be the owner of the form to add questions", 403
 
     if Question.query.filter_by(form_id=form_id).first() is not None:
         return "Method Not Allowed: you have already created questions for this form", 405
 
     if request.method == 'GET':
-        return render_template('formCreation.html', form=form_id, questions=question_number)
+        return render_template('form_create.html', form=form_id, questions=number_of_questions, answers=number_of_answers)
     else:
-        question_text = request.form.get('question0')
-        question_category = "test"
-        question_multiple = "on" == request.form.get('multiple0')
-        answer_text = request.form.get('answer0-0')
+        # check if dependency order is respected
+        request_form = request.form
+        for i in range(0, number_of_questions):
+            has_dependency = "on" == request_form.get('dependency' + str(i))
+            dependency_question = request_form.get('question_dependency' + str(i))
+            dependency_answer = request_form.get('answer_dependency' + str(i))
 
-        question = Question(text=question_text, category=question_category, form_id=form, multiple=question_multiple)
-        db.session.add(question)
-        db.session.commit()
-        print(question.id)
-        answer = Answer(text=answer_text, question_id=question.id, next_question=None)
-        db.session.add(answer)
+            if has_dependency:
+                if int(dependency_question) >= i:
+                    flash("Error: a question can't be dependent from an answer that comes after it")
+                    return redirect(url_for('form.add_questions', form=form, questions=questions, answers=answers))
+                
+                if int(dependency_answer) >= number_of_answers:
+                    flash("Error: a question can't be dependent from an answer doesn't exist")
+                    return redirect(url_for('form.add_questions', form=form, questions=questions, answers=answers))
 
-        for i in range(1, question_number):
-            question_text = request.form.get('question' + str(i))
+        # adds questions and answers to database
+        question_ids = []
+        for i in range(0, number_of_questions):
+            question_text = request_form.get('question' + str(i))
             question_category = "test"
-            question_multiple = "on" == request.form.get('multiple' + str(i))
-            answer_text = request.form.get('answer0-' + str(i))
+            question_multiple = "on" == request_form.get('multiple' + str(i))
+            has_dependency = "on" == request_form.get('dependency' + str(i))
 
             question = Question(text=question_text, category=question_category, form_id=form, multiple=question_multiple)
+
+            if has_dependency:
+                dependency_question = int(request_form.get('question_dependency' + str(i)))
+                dependency_answer = int(request_form.get('answer_dependency' + str(i)))
+                
+                question.dependency_id = ((Answer.query.filter_by(question_id=question_ids[dependency_question]).all())[dependency_answer]).id
+
             db.session.add(question)
             db.session.commit()
-            answer.next_question = question.id
-            answer = Answer(text=answer_text, question_id=question.id, next_question=None)
-            db.session.add(answer)
+            question_ids.append(question.id)
 
-        db.session.commit()
+            for j in range(0, number_of_answers):
+                answer_text = request_form.get('answer' + str(j) + '-question' + str(i))
+                answer = Answer(text=answer_text, question_id=question.id)
+                db.session.add(answer)
+
+            db.session.commit()
+
         flash("Success! Your form has been added.")
         return render_template('success.html')
 
@@ -76,9 +127,19 @@ def add_questions(form, questions):
 @login_required
 def delete_form(form_id):
     form_id = int(form_id)
+    form = Form.query.filter_by(id=form_id).first()
 
-    if current_user.id != Form.query.filter_by(id=form_id).first().creator:
+    if form is None:
+        return "Method Not Allowed: the form you are trying to delete does not exist", 405
+
+    if current_user.id != form.creator_id:
         return "Forbidden: you must be the owner of the form to delete it", 403
+    
+    submissions = Submission.query.filter_by(form_id=form_id).all()
+    for submission in submissions:
+        db.session.delete(submission)
+
+    db.session.commit()
     
     form = Form.query.filter_by(id=form_id).first()
     questions = Question.query.filter_by(form_id=form_id).all()

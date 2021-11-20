@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block pagebody %}
+
+<div class="mt-5" style="max-width: 480px; margin: auto;">
+    {% for form in forms %}
+        <h1 class="h3 font-weight-normal mt-3">
+            {{form.name}}
+        </h1>
+        <p class="font-weight-normal mt-3">
+            {{form.description}}
+        </p>
+        <div class="mt-3 mb-3">
+            <a class="btn btn-outline-primary" role="button" href="{{ url_for('form.submit_form', form_id=form.id) }}">Answer Form</a>
+        </div>
+    {% endfor %}
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class=" mt-3 alert alert-danger" role="alert">
+                    {{message}}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+
+{% endblock %}
