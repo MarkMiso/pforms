@@ -21,6 +21,10 @@ def show_user():
 
 @user.route('/signup', methods=['GET', 'POST'])
 def add_user():
+    if current_user.is_authenticated:
+        flash("Error: you are already signed up")
+        return render_template('signup.html')
+        
     if request.method == 'GET':
         return render_template('signup.html')
     else:
@@ -57,6 +61,10 @@ def delete_user():
 # Sign in and sign out
 @user.route('/signin', methods=['GET', 'POST'])
 def signin():
+    if current_user.is_authenticated:
+        flash("Error: you are already signed in")
+        return render_template('signin.html')
+
     if request.method == 'GET':
         return render_template('signin.html')
     else:
