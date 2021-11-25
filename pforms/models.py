@@ -33,6 +33,9 @@ class Form(db.Model):
 
    questions = db.relationship('Question', backref='form', foreign_keys='Question.form_id', lazy=True)
 
+   def number_of_submissions(self):
+       return Submission.query.filter_by(form_id=self.id).count()
+
 class Question(db.Model):
    __tablename__ = 'questions'
    
@@ -45,6 +48,9 @@ class Question(db.Model):
    
    answers = db.relationship('Answer', backref='question', foreign_keys='Answer.question_id', lazy=True)
 
+   def number_of_answers(self):
+       return len(self.answers)
+
 class Answer(db.Model):
    __tablename__ = 'answers'
    
@@ -54,6 +60,11 @@ class Answer(db.Model):
    times_selected = db.Column(db.Integer, default=0)
 
    dependency = db.relationship('Question', backref='dependent', foreign_keys='Question.dependency_id',  lazy=True, uselist=False)
+
+   def get_percent(self):
+       form_id = Question.query.filter_by(id=self.question_id).first().form_id
+       
+       return int((self.times_selected / Form.query.filter_by(id=form_id).first().number_of_submissions()) * 100)
 
 class Submission(db.Model):
     __tablename__ = 'submissions'

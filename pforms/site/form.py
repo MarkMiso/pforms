@@ -15,9 +15,9 @@ def show_forms():
 def submit_form(form_id):
     form_id = int(form_id)
 
-    if Submission.query.filter_by(user_id=current_user.id).filter_by(form_id=form_id).first() is not None:
-        flash("Error: form already answered")
-        return redirect(url_for('form.show_forms'))
+    #if Submission.query.filter_by(user_id=current_user.id).filter_by(form_id=form_id).first() is not None:
+    #    flash("Error: form already answered")
+    #    return redirect(url_for('form.show_forms'))
 
     if request.method == 'GET':
         return render_template('form.html', form_id=form_id, form=Form.query.filter_by(id=form_id).first())
@@ -25,16 +25,15 @@ def submit_form(form_id):
         form = Form.query.filter_by(id=form_id).first()
         request_form = request.form
 
-
         answers = []
         for question in form.questions:
-            answer_id = request_form.get(str(question.id))
-            if answer_id is not None: answer_id = int(answer_id)
+            answer_ids = request_form.getlist(str(question.id))
+            print(answer_ids)
 
             for answer in question.answers:
-                if answer_id == answer.id:
+                if str(answer.id) in answer_ids:
                     if question.dependency_id is None or question.dependency_id in answers:
-                        answers.append(answer_id)
+                        answers.append(answer.id)
                         answer.times_selected += 1
 
         submit = Submission(form_id=form.id, user_id=current_user.id)
@@ -130,7 +129,7 @@ def delete_form(form_id):
     form = Form.query.filter_by(id=form_id).first()
 
     if form is None:
-        return "Method Not Allowed: the form you are trying to delete does not exist", 405
+        return "Missing File: the form you are trying to delete does not exist", 404
 
     if current_user.id != form.creator_id:
         return "Forbidden: you must be the owner of the form to delete it", 403
@@ -157,3 +156,21 @@ def delete_form(form_id):
 
     flash("Success! Your form has been deleted")
     return render_template('success.html')
+
+@form.route('/forms/<form_id>/statistics')
+@login_required
+def get_data(form_id):
+    form_id = int(form_id)
+    form = Form.query.filter_by(id=form_id).first()
+
+    if form is None:
+        return "Missing File: the form {form_id} delete does not exist", 404
+
+    if form.number_of_submissions() == 0:
+        flash("Error: the form has never been answered")
+        return redirect(url_for('user.show_user'))
+
+    if current_user.id != form.creator_id:
+        return "Forbidden: you must be the creator of the form to wiew it's statistics", 403
+
+    return render_template('statistics.html', form=form)

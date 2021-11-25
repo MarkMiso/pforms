@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block pagebody %}
+
+{% with n_submissions = form.number_of_submissions() %}
+    <div style="max-width: 480px; margin: auto;">
+        <div class="card shadow-sm mt-3">
+            <div class="card-body">
+                <h3 class="card-title">
+                    {{form.name}}
+                </h3>
+                <p class="card-subtitle mt-3">
+                    {{form.description}}
+                </p>
+                <p class="card-text text-muted mt-3">
+                    Total number of submissions: {{n_submissions}}
+                </p>
+            </div>
+        </div>
+        {% for question in form.questions %}
+            <div class="card shadow-sm mt-3">
+                <div class="card-header">
+                    <h4>
+                        {{question.text}}
+                    </h4>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for answer in question.answers %}
+                        <li class="list-group-item">
+                            <p class="card-title">
+                                {{answer.text}}
+                            </p>
+                            {% with percent = answer.get_percent() %}
+                                <p class="card-subtitle text-muted mb-2">
+                                    Times selected: {{answer.times_selected}} in {{n_submissions}}
+                                </p>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar" role="progressbar" style="width: {{percent}}%;" aria-valuenow="{{percent}}" aria-valuemin="0" aria-valuemax="100">{{percent}}%</div>
+                                </div>
+                            {% endwith %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+{% endwith %}
+{% endblock %}
