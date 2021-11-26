@@ -1,57 +1,91 @@
 {% extends "base.html" %}
-
 {% block pagebody %}
 
-<div class="mt-5">
+<div style="max-width: 480px; margin: auto;">
     {% if questions %}
-        <form  method="POST" action="/forms/create/{{ form }}/{{ questions }}/{{ answers }}" style="max-width: 480px; margin: auto;">
+        <form  method="POST" action="/forms/create/{{ form }}/{{ questions }}/{{ answers }}">
             {% for i in range(0, questions) %}
-                <h1 class="h3 font-weight-normal mt-3">
-                    Question number {{ i }}
-                </h1>
-                <input type="text" name="question{{ i }}" class="form-control mt-3" placeholder="question" required>
-                {%for j in range(0, answers) %}
-                    <input type="text" name="answer{{ j }}-question{{ i }}" class="form-control mt-3" placeholder="answer {{ j }}" required>
-                {% endfor %}
-                <div class="form-check mt-3">
-                    <input type="checkbox" name="multiple{{ i }}" class="form-check-input">
-                    <label class="form-check-label" for="multiple{{ i }}">Allow multiple answers</label>
-                </div>
-                <div class="form-check mt-3">
-                    <input type="checkbox" name="dependency{{ i }}" class="form-check-input">
-                    <label class="form-check-label" for="dependency{{ i }}">Show question only if a specific answer is given</label>
-                </div>
-                <div class="input-group mt-3">
-                    <input type="number" name="question_dependency{{ i }}" class="form-control" placeholder="Question number">
-                    <input type="number" name="answer_dependency{{ i }}" class="form-control" placeholder="Answer number">
+                <div class="card shadow-sm mt-3">
+                    <div class="card-header">
+                        <h4 class="card-text">
+                            Question number {{ i }}
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <input type="text" name="question{{ i }}" class="form-control" placeholder="question" required>
+                        {%for j in range(0, answers) %}
+                            <input type="text" name="answer{{ j }}-question{{ i }}" class="form-control mt-3" placeholder="answer {{ j }}" required>
+                        {% endfor %}
+                        <div class="form-check mt-3">
+                            <input type="checkbox" name="multiple{{ i }}" class="form-check-input">
+                            <label class="form-check-label" for="multiple{{ i }}">Allow multiple answers</label>
+                        </div>
+                        <div class="form-check mt-3" name="dependency">
+                            <input type="checkbox" name="dependency{{ i }}" class="form-check-input">
+                            <label class="form-check-label" for="dependency{{ i }}">Show question only if a specific answer is given</label>
+                        </div>
+                        <div class="input-group mt-3">
+                            <input type="number" name="question_dependency{{ i }}" class="form-control" placeholder="Question number" disabled>
+                            <input type="number" name="answer_dependency{{ i }}" class="form-control" placeholder="Answer number" disabled>
+                        </div>
+                    </div>
                 </div>
             {% endfor %}
+
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
                     {% for message in messages %}
-                        <div class=" mt-3 alert alert-danger" role="alert">
+                        <div class=" mt-3 alert alert-danger shadow-sm" role="alert">
                             {{message}}
                         </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-            <div class="mt-3 mb-3">
+
+            <div class="mt-3">
                 <button type="submit" class="btn btn-outline-primary">Submit</button>
             </div>
         </form>
+
+        <script>
+            window.onload = function() {
+                for (var elem of document.getElementsByName('dependency')) {
+                    let check = elem.childNodes[1];
+                    check.addEventListener("click", function() {
+                        let question = document.getElementsByName('question_' + this.name)[0];
+                        let answer = document.getElementsByName('answer_' + this.name)[0];
+                        console.log(question)
+
+                        if (this.checked) {
+                            question.removeAttribute("disabled");
+                            answer.removeAttribute("disabled");
+                        } else {
+                            question.setAttribute("disabled", "true");
+                            answer.setAttribute("disabled", "true");    
+                        }
+                    })
+                }
+            }
+        </script>
     {% else %}
-        <form method="POST" action="/forms/create" style="max-width: 480px; margin: auto;">
-            <h1 class="h3 font-weight-normal mt-3">
-                Please enter the required fields
-            </h1>
-            <input type="text" name="title" class="form-control mt-3" id="title" placeholder="Form Title" required>
-            <input type="text" name="description" class="form-control mt-3" id="description" placeholder="Form Description" required>
-            <input type="number" name="questions" class="form-control mt-3" id="questions" placeholder="Number of Questions" required>
-            <input type="number" name="answers" class="form-control mt-3" id="answers" placeholder="Number of Answers for each Question" required>
-            <div class="mt-3 mb-3">
-                <button type="submit" class="btn btn-outline-primary">Submit</button>
+        <div class="card text-center shadow-sm mt-3">
+            <div class="card-header">
+                <h3 class="card-text">
+                    Please enter the required fields
+                </h3>
             </div>
-        </form>
+            <div class="card-body">
+                <form class="mb-0" method="POST" action="/forms/create">
+                    <input type="text" name="title" class="form-control" id="title" placeholder="Form Title" required>
+                    <input type="text" name="description" class="form-control mt-3" id="description" placeholder="Form Description" required>
+                    <input type="number" name="questions" class="form-control mt-3" id="questions" placeholder="Number of Questions" required>
+                    <input type="number" name="answers" class="form-control mt-3" id="answers" placeholder="Number of Answers for each Question" required>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-outline-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

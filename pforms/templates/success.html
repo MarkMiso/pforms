@@ -5,13 +5,14 @@
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             {% for message in messages %}
-            <div class="mt-3 text-center alert alert-success" role="alert" >
+            <div class="mt-3 text-center alert alert-success shadow-sm" role="alert" >
                 {{message}}
             </div>
 
             {% endfor %}
         {% endif %}
     {% endwith %}
+    
     <div class="mt-3 d-flex justify-content-center">
         <a class="btn btn-outline-primary" href="{{ url_for('user.show_user') }}">Back to Home</a>
     </div>

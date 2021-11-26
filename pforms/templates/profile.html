@@ -1,43 +1,49 @@
 {% extends "base.html" %}
 {% block pagebody %}
 
-<div class="mt-5" style="max-width: 480px; margin: auto;">
-    <div>
-        <h1 class="h3 font-weight-normal mt-3">
-            Welcome to pForms {{user}}
-        </h1>
-        <div class="mt-3 mb-3">
+<div style="max-width: 480px; margin: auto;">
+    <div class="card text-center shadow-sm mt-3">
+        <div class="card-header">
+            <h3>
+                Welcome to pForms {{user}}
+            </h3>
+        </div>
+        <div class="card-body">
             <a class="btn btn-outline-primary" role="button" href="{{ url_for('form.add_form') }}">Create Form</a>
         </div>
     </div>
     {% with forms = current_user.forms %}
         {% if forms %}
-            <h1 class="h3 mt-5 font-weight-normal">
-                Your forms:
-            </h1>
             {% for form in forms %}
-                <h2 class="h4 font-weight-normal mt-3">
-                    {{form.name}}
-                </h2>
-                <p class="font-weight-normal mt-3">
-                    {{form.description}}
-                </p>
-                <div class="mt-3 mb-3">
-                    <a class="btn btn-outline-primary" role="button" href="{{ url_for('form.get_data', form_id=form.id) }}">View statistics</a>
-                    <a class="btn btn-outline-danger" role="button" href="{{ url_for('form.delete_form', form_id=form.id) }}"> Delete form </a></br>
+            <div class="card shadow-sm mt-3">
+                <div class="card-header">
+                    <h3 class="card-text">
+                        {{form.name}}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-muted">
+                        {{form.description}}
+                    </p>
+                    <div class="d-flex justify-content-between">
+                        <a class="btn btn-outline-primary" role="button" href="{{ url_for('form.get_data', form_id=form.id) }}">View statistics</a>
+                        <a class="btn btn-outline-danger" role="button" href="{{ url_for('form.delete_form', form_id=form.id) }}"> Delete form </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class=" mt-3 alert alert-danger shadow-sm" role="alert">
+                    {{message}}
                 </div>
             {% endfor %}
         {% endif %}
     {% endwith %}
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for message in messages %}
-            <div class=" mt-3 alert alert-danger" role="alert">
-                {{message}}
-            </div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
 </div>
 
 {% endblock %}

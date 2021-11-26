@@ -1,17 +1,19 @@
 {% extends "base.html" %}
 {% block pagebody %}
 
-{% with n_submissions = form.number_of_submissions() %}
-    <div style="max-width: 480px; margin: auto;">
-        <div class="card shadow-sm mt-3">
-            <div class="card-body">
-                <h3 class="card-title">
+<div style="max-width: 480px; margin: auto;">
+    {% with n_submissions = form.number_of_submissions() %}
+        <div class="card text-center shadow-sm mt-3">
+            <div class="card-header">
+                <h3 class="card-text">
                     {{form.name}}
                 </h3>
-                <p class="card-subtitle mt-3">
+            </div>
+            <div class="card-body">
+                <p class="card-text">
                     {{form.description}}
                 </p>
-                <p class="card-text text-muted mt-3">
+                <p class="card-text text-muted">
                     Total number of submissions: {{n_submissions}}
                 </p>
             </div>
@@ -19,14 +21,14 @@
         {% for question in form.questions %}
             <div class="card shadow-sm mt-3">
                 <div class="card-header">
-                    <h4>
+                    <h4 class="card-text">
                         {{question.text}}
                     </h4>
                 </div>
                 <ul class="list-group list-group-flush">
                     {% for answer in question.answers %}
                         <li class="list-group-item">
-                            <p class="card-title">
+                            <p class="card-text">
                                 {{answer.text}}
                             </p>
                             {% with percent = answer.get_percent() %}
@@ -42,6 +44,7 @@
                 </ul>
             </div>
         {% endfor %}
-    </div>
-{% endwith %}
+    {% endwith %}
+</div>
+
 {% endblock %}

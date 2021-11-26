@@ -1,31 +1,37 @@
 {% extends "base.html" %}
 {% block pagebody %}
 
-<div class="mt-5" style="max-width: 480px; margin: auto;">
+<div style="max-width: 480px; margin: auto;">
     {% for form in forms %}
-        <div>
-            <h1 class="h3 font-weight-normal mt-3">
-                {{form.name}}
-            </h1>
-            <p class="font-weight-normal mt-3">
-                {{form.description}}
-            </p>
-            <div class="mt-3 mb-3">
-                <a class="btn btn-outline-primary" role="button" href="{{ url_for('form.submit_form', form_id=form.id) }}">Answer Form</a>
+        <div class="card shadow-sm mt-3">
+            <div class="card-header">
+                <h3 class="card-text">
+                    {{form.name}}
+                </h3>
+                <p class="card-text text-muted">
+                    created by: {{form.get_creator().username}}
+                </p>
+            </div>
+            <div class="card-body">
+                <p class="card-text text-muted">
+                    {{form.description}}
+                </p>
+                <a class="btn btn-outline-primary" role="button" href="{{ url_for('form.submit_form', form_id=form.id) }}">
+                    Answer Form
+                </a>
             </div>
         </div>
     {% endfor %}
-
+    
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             {% for message in messages %}
-                <div class=" mt-3 alert alert-danger" role="alert">
+                <div class="mt-3 alert alert-danger shadow-sm" role="alert">
                     {{message}}
                 </div>
             {% endfor %}
         {% endif %}
     {% endwith %}
 </div>
-
 
 {% endblock %}

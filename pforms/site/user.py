@@ -35,7 +35,7 @@ def add_user():
 
         if password_check == password:
             if User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first():
-                flash('username or email already used')
+                flash('username or email already in use')
             else:
                 user = User(username=username, email=email, password=password)
                 db.session.add(user)
