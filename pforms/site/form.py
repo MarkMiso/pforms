@@ -1,5 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, send_from_directory
+import csv
 
+from pforms.settings import CSV_FOLDER_PATH
 from pforms.extensions import db, login_required, current_user
 from pforms.models import User, Form, Question, Answer, Submission
 
@@ -164,13 +166,44 @@ def get_data(form_id):
     form = Form.query.filter_by(id=form_id).first()
 
     if form is None:
-        return "Missing File: the form {form_id} delete does not exist", 404
+        return "Missing File: the form {form_id} does not exist", 404
 
     if form.number_of_submissions() == 0:
-        flash("Error: the form has never been answered")
+        flash("Error: the form {form_id} has never been answered")
         return redirect(url_for('user.show_user'))
 
     if current_user.id != form.creator_id:
         return "Forbidden: you must be the creator of the form to wiew it's statistics", 403
 
     return render_template('statistics.html', form=form)
+
+@form.route('/forms/<form_id>/statistics/csv')
+@login_required
+def export_data(form_id):
+    filename = form_id + '.csv'
+    form_id = int(form_id)
+    form = Form.query.filter_by(id=form_id).first()
+
+    if form is None:
+        return "Missing File: the form {form_id} does not exist", 404
+
+    if current_user.id != form.creator_id:
+        return "Forbidden: you must be the creator of the form to wiew it's statistics", 403
+
+    header = ['question text', 'answer text', 'times selected']
+    data = []
+
+    # fills data
+    for question in form.questions:
+        for answer in question.answers:
+            data.append([question.text, answer.text, answer.times_selected])
+
+    # write csv file
+    with open(CSV_FOLDER_PATH + filename, 'w', encoding='UTF', newline='') as file:
+        writer = csv.writer(file)
+
+        writer.writerow(header)
+        writer.writerows(data)
+
+    # send csv file
+    return send_from_directory(directory=CSV_FOLDER_PATH, path=filename, as_attachment=True)

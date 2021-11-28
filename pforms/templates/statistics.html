@@ -44,6 +44,7 @@
                 </ul>
             </div>
         {% endfor %}
+        <a class="btn btn-outline-primary mt-3" role="button" href="{{ url_for('form.export_data', form_id=form.id) }}">Export CSV</a>
     {% endwith %}
 </div>
 
