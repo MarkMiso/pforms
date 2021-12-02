@@ -2,15 +2,36 @@
 {% block pagebody %}
 
 <div style="max-width: 480px; margin: auto;">
+    <div class="card shadow-sm text-center mt-3">
+        <h3 class="card-header">
+            Form list
+        </h3>
+        <div class="card-body">
+            <form class="mb-0" method="POST" action="/forms/home">
+                <select name="category" class="form-select" id="category" required>
+                    <option value="-1" selected>filters</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-outline-primary">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
     {% for form in forms %}
         <div class="card shadow-sm mt-3">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between">
                 <h3 class="card-text">
                     {{form.name}}
                 </h3>
-                <p class="card-text text-muted">
-                    created by: {{form.get_creator().username}}
-                </p>
+                <div class="card-text text-muted text-end lh-sm">
+                    creator: {{form.creator.username}} </br>
+                    {% if form.category %}
+                        category: {{form.category.name}}
+                    {% endif %}
+                </div>
             </div>
             <div class="card-body">
                 <p class="card-text text-muted">

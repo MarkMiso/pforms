@@ -2,6 +2,18 @@
 {% block pagebody %}
 
 <div style="max-width: 480px; margin: auto;">
+    <div class="card text-center shadow-sm mt-3">
+        <div class="card-header">
+            <h3 class="card-text">
+                {{form.name}}
+            </h3>
+        </div>
+        <div class="card-body">
+            <p class="card-text">
+                {{form.description}}
+            </p>
+        </div>
+    </div>
     {% if form_id %}
         <form method="POST" action="{{ url_for('form.submit_form', form_id=form_id) }}">
             {% for question in form.questions %}

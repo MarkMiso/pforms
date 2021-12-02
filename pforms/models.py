@@ -29,22 +29,19 @@ class Form(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(500), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     questions = db.relationship('Question', backref='form', foreign_keys='Question.form_id', lazy=True)
 
     def number_of_submissions(self):
         return Submission.query.filter_by(form_id=self.id).count()
-    
-    def get_creator(self):
-        return User.query.filter_by(id=self.creator_id).first()
 
 class Question(db.Model):
     __tablename__ = 'questions'
     
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(250), nullable=False)
-    category = db.Column(db.String(120), nullable=False)
     form_id = db.Column(db.Integer, db.ForeignKey('forms.id'), nullable=False)
     dependency_id = db.Column(db.Integer, db.ForeignKey('answers.id'), nullable=True)
     multiple = db.Column(db.Boolean)
@@ -74,3 +71,11 @@ class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     form_id = db.Column(db.Integer, db.ForeignKey('forms.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+class Category(db.Model):
+    __tablename__ = 'categories'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+
+    forms = db.relationship('Form', backref='category', lazy=True)

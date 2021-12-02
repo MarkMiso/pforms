@@ -78,6 +78,12 @@
                 <form class="mb-0" method="POST" action="/forms/create">
                     <input type="text" name="title" class="form-control" id="title" placeholder="Form Title" required>
                     <input type="text" name="description" class="form-control mt-3" id="description" placeholder="Form Description" required>
+                    <select name="category" class="form-select mt-3" id="category" required>
+                        <option value="-1" selected>No Category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
                     <input type="number" name="questions" class="form-control mt-3" id="questions" placeholder="Number of Questions" required>
                     <input type="number" name="answers" class="form-control mt-3" id="answers" placeholder="Number of Answers for each Question" required>
                     <div class="mt-3">

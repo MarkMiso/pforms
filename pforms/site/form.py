@@ -3,14 +3,28 @@ import csv
 
 from pforms.settings import CSV_FOLDER_PATH
 from pforms.extensions import db, login_required, current_user
-from pforms.models import User, Form, Question, Answer, Submission
+from pforms.models import User, Form, Question, Answer, Submission, Category
 
 form = Blueprint('form', __name__)
 
-@form.route('/forms/home')
+@form.route('/forms/home', methods=['GET', 'POST'])
 def show_forms():
+    categories = Category.query.all()
     forms = Form.query.all()
-    return render_template('form_home.html', forms=forms)
+
+    if request.method == 'GET':
+        return render_template('form_home.html', forms=forms, categories=categories)
+    else:
+        category = int(request.form.get('category'))
+        
+        if category < 0 or Category.query.filter_by(id=category).first() is None:
+            return render_template('form_home.html', forms=forms, categories=categories)
+        else:
+            print("dio maledetto mailale")
+            forms = Form.query.filter_by(category_id=category).all()
+            return render_template('form_home.html', forms=forms, categories=categories)
+
+
 
 @form.route('/forms/<form_id>', methods=['GET', 'POST'])
 @login_required
@@ -47,16 +61,23 @@ def submit_form(form_id):
 @form.route('/forms/create', methods=['GET', 'POST'])
 @login_required
 def add_form():
+    categories = Category.query.all()
+
     if request.method == 'GET':
-        return render_template('form_create.html')
+        return render_template('form_create.html', categories=categories)
     else:
         # TODO: prevent creation of empty form
         title = request.form.get('title')
         description = request.form.get('description')
+        category = request.form.get('category')
         questions = request.form.get('questions')
         answers = request.form.get('answers')
 
-        form = Form(name=title, description=description, creator_id=current_user.id)
+        if (int(category) < 0 or Category.query.filter_by(id=category).first() is None):
+            form = Form(name=title, description=description, creator_id=current_user.id)
+        else :
+            form = Form(name=title, description=description, category_id=category, creator_id=current_user.id)
+        
         db.session.add(form)
         db.session.commit()
 
@@ -98,11 +119,10 @@ def add_questions(form, questions, answers):
         question_ids = []
         for i in range(0, number_of_questions):
             question_text = request_form.get('question' + str(i))
-            question_category = "test"
             question_multiple = "on" == request_form.get('multiple' + str(i))
             has_dependency = "on" == request_form.get('dependency' + str(i))
 
-            question = Question(text=question_text, category=question_category, form_id=form, multiple=question_multiple)
+            question = Question(text=question_text, form_id=form, multiple=question_multiple)
 
             if has_dependency:
                 dependency_question = int(request_form.get('question_dependency' + str(i)))
@@ -166,10 +186,10 @@ def get_data(form_id):
     form = Form.query.filter_by(id=form_id).first()
 
     if form is None:
-        return "Missing File: the form {form_id} does not exist", 404
+        return "Missing File: the form" + str(form_id) + " does not exist", 404
 
     if form.number_of_submissions() == 0:
-        flash("Error: the form {form_id} has never been answered")
+        flash("Error: the form '" + form.name + "' has never been answered")
         return redirect(url_for('user.show_user'))
 
     if current_user.id != form.creator_id:
@@ -185,7 +205,7 @@ def export_data(form_id):
     form = Form.query.filter_by(id=form_id).first()
 
     if form is None:
-        return "Missing File: the form {form_id} does not exist", 404
+        return "Missing File: the form " + str(form_id) + " does not exist", 404
 
     if current_user.id != form.creator_id:
         return "Forbidden: you must be the creator of the form to wiew it's statistics", 403
