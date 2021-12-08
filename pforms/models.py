@@ -44,7 +44,7 @@ class Question(db.Model):
     text = db.Column(db.String(250), nullable=False)
     form_id = db.Column(db.Integer, db.ForeignKey('forms.id'), nullable=False)
     dependency_id = db.Column(db.Integer, db.ForeignKey('answers.id'), nullable=True)
-    multiple = db.Column(db.Boolean)
+    multiple = db.Column(db.Boolean, nullable=False)
     
     answers = db.relationship('Answer', backref='question', foreign_keys='Answer.question_id', lazy=True)
 
