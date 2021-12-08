@@ -1,3 +1,5 @@
+from os import path, remove
+from .settings import CSV_FOLDER_PATH
 from .extensions import db, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from dataclasses import dataclass
@@ -49,6 +51,12 @@ class Form(db.Model):
         return Submission.query.filter_by(form_id=self.id).count()
 
     def delete(self):
+        # cvs cleaning
+        full_path = CSV_FOLDER_PATH + str(self.id) + '.csv'
+        
+        if path.exists(full_path):
+            remove(full_path)
+
         # submissions deletion
         submissions = Submission.query.filter_by(form_id=self.id).all()
         for submission in submissions:

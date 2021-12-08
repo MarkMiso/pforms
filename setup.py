@@ -7,9 +7,11 @@ with app.app_context():
     db.create_all()
 
     sport = Category(name='sport')
+    food = Category(name='food')
     deleted = User(username='deleted', email='deleted', password='dbfaodfnalnfpsdfiwelsdfoisl')
 
     db.session.add(sport)
+    db.session.add(food)
     db.session.add(deleted)
 
     db.session.commit()
