@@ -18,11 +18,22 @@ class User(db.Model, UserMixin):
         self.password = generate_password_hash(password)
 
     def __repr__(self):
-        return f'<User: {self.username}>'
+       return f'<User: {self.username}>'
 
     def verify_password(self, password):
         return check_password_hash(self.password, password)
+
+    def delete(self):
+        for form in self.forms:
+            form.delete()
+
+        deleted = User.query.filter_by(email='deleted').first()
+        for submission in Submission.query.filter_by(user_id=self.id).all():
+            submission.user_id = deleted.id
+
+        db.session.delete(self)
      
+
 class Form(db.Model):
     __tablename__ = 'forms'
     
@@ -36,6 +47,20 @@ class Form(db.Model):
 
     def number_of_submissions(self):
         return Submission.query.filter_by(form_id=self.id).count()
+
+    def delete(self):
+        # submissions deletion
+        submissions = Submission.query.filter_by(form_id=self.id).all()
+        for submission in submissions:
+            submission.delete()
+        
+        # questions (and answers) deletion
+        for question in self.questions:
+            question.delete()
+
+        # form deletion
+        db.session.delete(self)
+
 
 class Question(db.Model):
     __tablename__ = 'questions'
@@ -51,6 +76,15 @@ class Question(db.Model):
     def number_of_answers(self):
         return len(self.answers)
 
+    def delete(self):
+        # answers deletion
+        for answer in self.answers:
+            answer.delete()
+
+        # question deletion
+        db.session.delete(self)
+        
+
 class Answer(db.Model):
     __tablename__ = 'answers'
     
@@ -65,12 +99,20 @@ class Answer(db.Model):
         form_id = Question.query.filter_by(id=self.question_id).first().form_id
         return int((self.times_selected / Form.query.filter_by(id=form_id).first().number_of_submissions()) * 100)
 
+    def delete(self):
+        db.session.delete(self)
+
+
 class Submission(db.Model):
     __tablename__ = 'submissions'
 
     id = db.Column(db.Integer, primary_key=True)
     form_id = db.Column(db.Integer, db.ForeignKey('forms.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    def delete(self):
+        db.session.delete(self)
+         
 
 class Category(db.Model):
     __tablename__ = 'categories'

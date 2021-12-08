@@ -7,11 +7,12 @@ from pforms.models import User, Form, Question, Answer, Submission, Category
 
 form = Blueprint('form', __name__)
 
-### FORMS HOME ###
+### FORMS HOME
 # GET:  renders all forms in the database whithout filter
 # POST: renders all form in the database with given filter
 # 
 # NOTE: having all forms rendered in a single page might cause performance issues
+###
 @form.route('/forms/home', methods=['GET', 'POST'])
 def show_forms():
     categories = Category.query.all()
@@ -29,10 +30,10 @@ def show_forms():
             return render_template('form_home.html', forms=forms, categories=categories)
 
 
-### FORM SUBMISSION ###
+### FORM SUBMISSION
 # GET:  render form submission form
 # POST: register answers of the form submission form in the database
-#
+###
 @form.route('/forms/<form_id>', methods=['GET', 'POST'])
 @login_required
 def submit_form(form_id):
@@ -76,12 +77,13 @@ def submit_form(form_id):
         flash('Success! Your answers have been registered')
         return render_template('success.html')
 
-### FORM CREATION ###
+### FORM CREATION
 # GET:  render form creation form
 # POST: register form in the database and render questions and answers creation form
 #
 # NOTE: form creation and questions creation is handled in different transactions, this might cause
 #       the creation of a form without questions if the user exits the questions creation page without submitting
+###
 @form.route('/forms/create', methods=['GET', 'POST'])
 @login_required
 def add_form():
@@ -107,10 +109,10 @@ def add_form():
 
         return redirect(url_for('form.add_questions', form=form.id, questions=questions, answers=answers))
 
-### QUESTIONS CREATION ###
+### QUESTIONS CREATION
 # GET:  renders questions and answers creation form
 # POST: register questions and answers in the database
-#
+###
 @form.route('/forms/create/<form>/<questions>/<answers>', methods=['GET', 'POST'])
 @login_required
 def add_questions(form, questions, answers):
@@ -174,11 +176,9 @@ def add_questions(form, questions, answers):
         flash("Success! Your form has been added.")
         return render_template('success.html')
 
-### FORM DELETION ###
+### FORM DELETION
 # GET:  Delete form and connected questions, answers and submissions
-#
-# NOTE: Full form deletion happens in multiple transactions due to dependencies,
-#       this might cause incomplete form deletion if the flask server creshes during the deletion process
+###
 @form.route('/forms/<form_id>/delete')
 @login_required
 def delete_form(form_id):
@@ -192,37 +192,18 @@ def delete_form(form_id):
     # ownership check
     if current_user.id != form.creator_id:
         return "Forbidden: you must be the owner of the form to delete it", 403
-    
-    # submissions deletion
-    submissions = Submission.query.filter_by(form_id=form_id).all()
-    for submission in submissions:
-        db.session.delete(submission)
-
-    db.session.commit()
-    
-    # questions and answers deletion
-    form = Form.query.filter_by(id=form_id).first()
-    questions = Question.query.filter_by(form_id=form_id).all()
-    for question in questions:
-        answers = Answer.query.filter_by(question_id=question.id).all()
-        for answer in answers:
-            db.session.delete(answer)
-
-        db.session.commit()
-        db.session.delete(question)
-
-    db.session.commit()
 
     # form deletion
-    db.session.delete(form)
+    Form.query.filter_by(id=form_id).first().delete()
     db.session.commit()
 
     flash("Success! Your form has been deleted")
     return render_template('success.html')
 
+
 ### FORM STATISTICS ###
 # GET:  renders statistics page
-#
+###
 @form.route('/forms/<form_id>/statistics')
 @login_required
 def get_data(form_id):
@@ -246,7 +227,7 @@ def get_data(form_id):
 
 ### FORM STATISTICS EXPORT ###
 # GET:  export form statistics
-#
+###
 @form.route('/forms/<form_id>/statistics/csv')
 @login_required
 def export_data(form_id):
