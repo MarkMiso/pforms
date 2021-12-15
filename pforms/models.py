@@ -101,13 +101,17 @@ class Answer(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     times_selected = db.Column(db.Integer, default=0)
 
-    dependency = db.relationship('Question', backref='dependent', foreign_keys='Question.dependency_id',  lazy=True, uselist=False)
+    dependency = db.relationship('Question', backref='dependent', foreign_keys='Question.dependency_id',  lazy=True)
 
     def get_percent(self):
         form_id = Question.query.filter_by(id=self.question_id).first().form_id
         return int((self.times_selected / Form.query.filter_by(id=form_id).first().number_of_submissions()) * 100)
 
     def delete(self):
+        # delete dependencies 
+        for dependency in self.dependency:
+            dependency.delete()
+
         db.session.delete(self)
 
 

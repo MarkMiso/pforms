@@ -14,23 +14,29 @@ Create a new database.
 postgres$ createdb yourdatabase
 ```
 
-In the main folder create a .env file and define the `SQLALCHEMY_DATABASE_URI` and `SECRET_KEY` variable with the URI for your database
+In the main folder create a .env file and define the `SQLALCHEMY_DATABASE_URI` (database uri), `SECRET_KEY` (server secret key) and `CSV_FOLDER_PATH` (path to store exported csv files) variables
 ```shell
 $ touch .env
 $ cat >> .env
   SQLALCHEMY_DATABASE_URI=postgresql://youruser:userpassword@localhost/yourdatabase
-  SECRET_KEY=yoursecretkey
+  SECRET_KEY=YourServerSecretkey
+  CSV_FOLDER_PATH=/YourAbsolutePathToStoreCSVFiles
 ```
 
-Install falsk-sqlalchemy
+Install the dependencies
 ```shell
-$ pip install flask-sqlalchemy
+$ pip install -r requirements.txt
 ```
 
 Now launch the setup scritp that will initalize the database.
 ```shell
 $ python setup.py
 ```
+
+> NOTE: The scipt initializes the database creating all tables and adding 2 form categories (sport and food) and a user called deleted
+> 
+> The user deleted is necessary for the correct functioning of the database, you should not modify it.
+> You are free to add and remove any category from the setup script.
 
 ## Troubleshooting postgres
 
@@ -42,18 +48,7 @@ $ sudo chown -P postgres:postgres /var/run/postgresql
 
 # Run
 
-Use the flask run command
+Use the flask run command to start the flask server
 ```
 $ flask run
 ```
-
-# TODO
-
-- scrivere documento di progetto
-- impementare i modelli ORM per il database in SQLAlchemy
-  - tabella questionario
-  - tabella domande
-  - tabella risposte
-- implementare meccanismo di creazione questionario
-- implementare meccanismo di risposte al questionario
-- implementare tool di analisi statistica

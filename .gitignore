@@ -1,3 +1,8 @@
 __pycache__/
 .env
 csv/
+bin/
+include/
+lib/
+lib64
+pyvenv.cfg
